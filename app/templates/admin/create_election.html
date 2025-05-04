@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Election - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="mb-2"><i class="fas fa-plus-circle me-2 text-primary"></i>Create New Election</h2>
+                <p class="text-muted mb-0">Set up a new election with voting period and details.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-edit text-primary me-2"></i>Election Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.create_election_route') }}">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Election Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required placeholder="Enter election title">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Provide a detailed description of this election"></textarea>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="start_time" class="form-label">Start Time</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                                    <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="end_time" class="form-label">End Time</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="far fa-calendar-check"></i></span>
+                                    <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.elections') }}" class="btn btn-light rounded-pill px-4 me-md-2">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-save me-1"></i> Create Election
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Information</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3 text-muted">Creating an Election</h6>
+                    <div class="d-flex mb-3">
+                        <div class="action-icon bg-primary-soft me-3">
+                            <i class="fas fa-file-alt text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Title & Description</h6>
+                            <p class="text-muted small mb-0">Provide a clear title and detailed description for voters</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="action-icon bg-info-soft me-3">
+                            <i class="fas fa-calendar-alt text-info"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Timeline</h6>
+                            <p class="text-muted small mb-0">Set accurate start and end times for the voting period</p>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="action-icon bg-success-soft me-3">
+                            <i class="fas fa-users text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Assign Voters</h6>
+                            <p class="text-muted small mb-0">After creation, assign eligible voters to participate</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning mt-4 mb-0">
+                        <div class="d-flex">
+                            <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
+                            <div>
+                                Once an election receives votes, its core details cannot be modified.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-success-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-info-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+    
+    .bg-warning-soft {
+        background-color: rgba(var(--bs-warning-rgb), 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set default start time to tomorrow at 8:00 AM
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(8, 0, 0, 0);
+    
+    // Set default end time to tomorrow at 6:00 PM
+    var tomorrowEnd = new Date();
+    tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
+    tomorrowEnd.setHours(18, 0, 0, 0);
+    
+    // Format dates for datetime-local input
+    function formatDateForInput(date) {
+        return date.getFullYear() + '-' + 
+               ('0' + (date.getMonth() + 1)).slice(-2) + '-' + 
+               ('0' + date.getDate()).slice(-2) + 'T' + 
+               ('0' + date.getHours()).slice(-2) + ':' + 
+               ('0' + date.getMinutes()).slice(-2);
+    }
+    
+    // Set default values
+    document.getElementById('start_time').value = formatDateForInput(tomorrow);
+    document.getElementById('end_time').value = formatDateForInput(tomorrowEnd);
+</script>
+{% endblock %} 

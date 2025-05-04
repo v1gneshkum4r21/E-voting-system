@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="mb-2"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Dashboard</h2>
+                <p class="text-muted mb-0">Welcome, {{ current_user.name }}! Monitor and manage the entire e-voting system.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{{ url_for('admin.create_election_route') }}" class="btn btn-primary rounded-pill">
+                    <i class="fas fa-plus-circle me-2"></i>Create Election
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon bg-primary-soft">
+                            <i class="fas fa-users text-primary"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Voters</h6>
+                            <h3 class="card-title mb-0">{{ voter_count }}</h3>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-light w-100 mt-2">Manage Users</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon bg-success-soft">
+                            <i class="fas fa-user-tie text-success"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Candidates</h6>
+                            <h3 class="card-title mb-0">{{ candidate_count }}</h3>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.pending_candidates') }}" class="btn btn-sm btn-light w-100 mt-2">
+                        Pending Approvals 
+                        {% if pending_approval_count > 0 %}
+                            <span class="badge bg-danger ms-1">{{ pending_approval_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon bg-info-soft">
+                            <i class="fas fa-vote-yea text-info"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Elections</h6>
+                            <h3 class="card-title mb-0">{{ election_count }}</h3>
+                            <span class="badge bg-info text-white">{{ active_election_count }} active</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.elections') }}" class="btn btn-sm btn-light w-100 mt-2">Manage Elections</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stats-icon bg-warning-soft">
+                            <i class="fas fa-ballot-check text-warning"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle text-muted mb-1">Total Votes</h6>
+                            <h3 class="card-title mb-0">{{ vote_count }}</h3>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.logs') }}" class="btn btn-sm btn-light w-100 mt-2">View Activity Logs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Quick Actions & System Info -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-bolt text-primary me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('admin.create_election_route') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="action-icon bg-success-soft me-3">
+                                <i class="fas fa-plus-circle text-success"></i>
+                            </div>
+                            <div>
+                                <span class="d-block">Create New Election</span>
+                                <small class="text-muted">Setup a new voting event</small>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('admin.pending_candidates') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="action-icon bg-primary-soft me-3">
+                                <i class="fas fa-user-check text-primary"></i>
+                            </div>
+                            <div>
+                                <span class="d-block">Review Candidate Applications</span>
+                                <small class="text-muted">Approve or reject candidates</small>
+                            </div>
+                            {% if pending_approval_count > 0 %}
+                                <span class="badge rounded-pill bg-danger ms-auto">{{ pending_approval_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="action-icon bg-info-soft me-3">
+                                <i class="fas fa-users-cog text-info"></i>
+                            </div>
+                            <div>
+                                <span class="d-block">Manage Users</span>
+                                <small class="text-muted">View and edit user accounts</small>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('admin.elections') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="action-icon bg-warning-soft me-3">
+                                <i class="fas fa-tasks text-warning"></i>
+                            </div>
+                            <div>
+                                <span class="d-block">View All Elections</span>
+                                <small class="text-muted">Manage past and upcoming elections</small>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('admin.logs') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="action-icon bg-secondary-soft me-3">
+                                <i class="fas fa-list-alt text-secondary"></i>
+                            </div>
+                            <div>
+                                <span class="d-block">View System Logs</span>
+                                <small class="text-muted">Track all system activities</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Information Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>System Information</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-clock text-muted me-2"></i> Server Time
+                            </div>
+                            <span class="text-dark">{{ now().strftime('%d-%m-%Y %H:%M:%S') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-vote-yea text-muted me-2"></i> Active Elections
+                            </div>
+                            <span class="badge bg-success rounded-pill">{{ active_election_count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-user-clock text-muted me-2"></i> Pending Approvals
+                            </div>
+                            <span class="badge bg-warning rounded-pill">{{ pending_approval_count }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Active Elections & Recent Activity -->
+        <div class="col-lg-8">
+            <!-- Active Elections Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-vote-yea text-primary me-2"></i>Active Elections</h5>
+                    {% if active_election_count > 0 %}
+                        <span class="badge bg-danger pulse-animation">LIVE</span>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    {% if active_elections %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Timeline</th>
+                                        <th>Votes Cast</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for election in active_elections %}
+                                        <tr>
+                                            <td class="fw-medium">{{ election.title }}</td>
+                                            <td>
+                                                <div class="small"><i class="far fa-calendar-alt text-muted me-1"></i> Started: {{ election.start_time.strftime('%d-%m-%Y %H:%M') }}</div>
+                                                <div class="small"><i class="far fa-calendar-check text-muted me-1"></i> Ends: {{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ election.vote_count }} votes</span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('admin.view_election', election_id=election.id) }}" class="btn btn-sm btn-primary rounded-pill">
+                                                    <i class="fas fa-chart-bar me-1"></i> Results
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>There are no active elections at this time.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Activity Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-history text-primary me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activity %}
+                                    <tr>
+                                        <td class="small text-nowrap">{{ activity['timestamp'] }}</td>
+                                        <td>
+                                            {% if activity['name'] %}
+                                                <span class="fw-medium">{{ activity['name'] }}</span>
+                                            {% else %}
+                                                <span class="text-muted"><i class="fas fa-cog me-1"></i>System</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if activity['action'] == 'USER_LOGIN' %}
+                                                <span class="badge bg-success">Login</span>
+                                            {% elif activity['action'] == 'USER_LOGOUT' %}
+                                                <span class="badge bg-secondary">Logout</span>
+                                            {% elif activity['action'] == 'USER_CREATE' %}
+                                                <span class="badge bg-primary">Registration</span>
+                                            {% elif activity['action'] == 'USER_UPDATE' %}
+                                                <span class="badge bg-info">Profile Update</span>
+                                            {% elif activity['action'] == 'VOTE_CAST' %}
+                                                <span class="badge bg-warning">Vote Cast</span>
+                                            {% elif activity['action'] == 'ELECTION_CREATE' %}
+                                                <span class="badge bg-primary">Election Created</span>
+                                            {% elif activity['action'] == 'CANDIDATE_REGISTER' %}
+                                                <span class="badge bg-info">Candidate Registration</span>
+                                            {% elif activity['action'] == 'CANDIDATE_STATUS_UPDATE' %}
+                                                <span class="badge bg-warning">Candidate Status Update</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ activity['action'] }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="small">{{ activity['details'] }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="text-center py-3 border-top">
+                        <a href="{{ url_for('admin.logs') }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                            <i class="fas fa-list-alt me-1"></i> View All Activity Logs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .stats-card {
+        transition: transform 0.2s;
+        border-radius: 0.75rem;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+    
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-success-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-info-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+    
+    .bg-warning-soft {
+        background-color: rgba(var(--bs-warning-rgb), 0.15);
+    }
+    
+    .bg-danger-soft {
+        background-color: rgba(var(--bs-danger-rgb), 0.15);
+    }
+    
+    .bg-secondary-soft {
+        background-color: rgba(var(--bs-secondary-rgb), 0.15);
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .list-group-item {
+        padding: 1rem 1.25rem;
+    }
+    
+    /* Animation for the live badge */
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function now() {
+        return new Date();
+    }
+</script>
+{% endblock %} 

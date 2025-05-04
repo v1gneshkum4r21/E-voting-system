@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Candidacy - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-edit me-2"></i>Edit Candidacy</h2>
+        <p class="lead">Update your candidacy details for: <strong>{{ election.title }}</strong></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Candidacy Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('candidate.edit_candidacy', election_id=election.id) }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="ward_number" class="form-label">Ward/Area Number</label>
+                        <input type="text" class="form-control" id="ward_number" name="ward_number" value="{{ candidate.ward_number or '' }}" placeholder="Enter your ward or area number (if applicable)">
+                        <div class="form-text">The specific ward or area you're representing, if any.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="manifesto" class="form-label">Manifesto <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="manifesto" name="manifesto" rows="6" required>{{ candidate.manifesto or '' }}</textarea>
+                        <div class="form-text">Your election promises, policy positions, and goals if elected.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="logo" class="form-label">Campaign Logo/Symbol (Optional)</label>
+                        {% if candidate.logo_path %}
+                            <div class="mb-2">
+                                <img src="{{ url_for('static', filename=candidate.logo_path) }}" alt="Current Logo" class="img-thumbnail" style="max-height: 100px;">
+                                <div class="form-text">Current logo</div>
+                            </div>
+                        {% endif %}
+                        <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                        <div class="form-text">Upload a new logo or symbol for your campaign (max 2MB, JPG/PNG only). Leave empty to keep the current one.</div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Any changes you make will require re-approval from an administrator.
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('candidate.dashboard') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-1"></i> Update Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Application Status</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{ election.title }}</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Election Status
+                        <span>
+                            {% if not election.is_active %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% elif election.get_status() == 'upcoming' %}
+                                <span class="badge bg-info">Upcoming</span>
+                            {% elif election.get_status() == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                            {% elif election.get_status() == 'completed' %}
+                                <span class="badge bg-warning">Completed</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Application Status
+                        <span>
+                            {% if candidate.approval_status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif candidate.approval_status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% elif candidate.approval_status == 'pending' %}
+                                <span class="badge bg-warning">Pending Approval</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Submitted On
+                        <span>{{ candidate.created_at }}</span>
+                    </li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> You can edit your details while your application is pending or rejected. Once approved, further changes are not allowed.
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Editing Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Be clear and concise in your manifesto</li>
+                    <li>Address any reasons for previous rejection (if applicable)</li>
+                    <li>Make sure all information is accurate and up-to-date</li>
+                    <li>Higher quality photos/logos increase your credibility</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Assign Voters - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="mb-2"><i class="fas fa-user-plus me-2 text-primary"></i>Assign Voters</h2>
+                <p class="text-muted mb-0">Select eligible voters for the election: <strong>{{ election.title }}</strong></p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{{ url_for('admin.view_election', election_id=election.id) }}" class="btn btn-outline-primary rounded-pill">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Election
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-users text-primary me-2"></i>Available Voters</h5>
+                    {% if voters %}
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">
+                            <i class="fas fa-check-square me-1"></i> Select All
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
+                            <i class="fas fa-square me-1"></i> Deselect All
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{{ url_for('admin.assign_voters', election_id=election.id) }}">
+                        {% if voters %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 50px;">
+                                                <div class="form-check">
+                                                    <input type="checkbox" id="select-all" class="form-check-input">
+                                                </div>
+                                            </th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Contact</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for voter in voters %}
+                                            <tr>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input type="checkbox" name="voter_ids" value="{{ voter.id }}" class="form-check-input voter-checkbox">
+                                                    </div>
+                                                </td>
+                                                <td class="fw-medium">{{ voter.name }}</td>
+                                                <td>{{ voter.email }}</td>
+                                                <td class="text-muted">{{ voter.contact or 'N/A' }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="p-3 border-top">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('admin.view_election', election_id=election.id) }}" class="btn btn-light rounded-pill px-4 me-md-2">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                        <i class="fas fa-user-plus me-1"></i> Assign Selected Voters
+                                    </button>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info m-3 mb-0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-3 fs-4"></i>
+                                    <div>
+                                        <p class="mb-1">No voters are available in the system.</p>
+                                        <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-primary mt-2">
+                                            <i class="fas fa-users-cog me-1"></i> Manage Users
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Election Info</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3 text-muted">About This Election</h6>
+                    <div class="list-group list-group-flush mb-4 border rounded-3">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-tag me-2"></i>Status</span>
+                            <span>
+                                {% if not election.is_active %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% elif election.get_status() == 'upcoming' %}
+                                    <span class="badge bg-info">Upcoming</span>
+                                {% elif election.get_status() == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif election.get_status() == 'completed' %}
+                                    <span class="badge bg-warning">Completed</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="far fa-calendar-alt me-2"></i>Start Time</span>
+                            <span class="small">{{ election.start_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="far fa-calendar-check me-2"></i>End Time</span>
+                            <span class="small">{{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3">Assignment Notes</h6>
+                    <div class="d-flex mb-2">
+                        <div class="me-2 text-primary"><i class="fas fa-check-circle"></i></div>
+                        <div class="small">Only users with VOTER role are shown in the list</div>
+                    </div>
+                    <div class="d-flex mb-2">
+                        <div class="me-2 text-primary"><i class="fas fa-check-circle"></i></div>
+                        <div class="small">Assigned voters can cast a vote in this election</div>
+                    </div>
+                    <div class="d-flex mb-2">
+                        <div class="me-2 text-primary"><i class="fas fa-check-circle"></i></div>
+                        <div class="small">You can assign voters at any time before or during the election</div>
+                    </div>
+                    <div class="d-flex mb-4">
+                        <div class="me-2 text-primary"><i class="fas fa-check-circle"></i></div>
+                        <div class="small">Each voter can only vote once per election</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+    
+    .rounded-3 {
+        border-radius: 0.5rem !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Select all voters
+    function selectAll() {
+        const checkboxes = document.querySelectorAll('.voter-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        document.getElementById('select-all').checked = true;
+    }
+    
+    // Deselect all voters
+    function deselectAll() {
+        const checkboxes = document.querySelectorAll('.voter-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        document.getElementById('select-all').checked = false;
+    }
+    
+    // Handle select-all checkbox
+    document.getElementById('select-all').addEventListener('change', function() {
+        if (this.checked) {
+            selectAll();
+        } else {
+            deselectAll();
+        }
+    });
+</script>
+{% endblock %} 

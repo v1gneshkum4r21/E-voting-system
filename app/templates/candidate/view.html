@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}View Candidacy - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2"><i class="fas fa-user-tie me-2 text-primary"></i>My Candidacy</h2>
+                <p class="text-muted mb-0">Election: <strong>{{ election.title }}</strong></p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="btn-group">
+                    {% if candidate.approval_status != 'approved' and election.get_status() in ['upcoming', 'active'] %}
+                        <a href="{{ url_for('candidate.edit_candidacy', election_id=election.id) }}" class="btn btn-warning rounded-pill">
+                            <i class="fas fa-edit me-1"></i> Edit Application
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('candidate.dashboard') }}" class="btn btn-primary rounded-pill ms-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Candidacy Details Card -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-alt text-primary me-2"></i>Candidacy Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4 gx-5">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2">Approval Status</h6>
+                            <div>
+                                {% if candidate.approval_status == 'approved' %}
+                                    <span class="badge bg-success rounded-pill">Approved</span>
+                                {% elif candidate.approval_status == 'rejected' %}
+                                    <span class="badge bg-danger rounded-pill">Rejected</span>
+                                {% elif candidate.approval_status == 'pending' %}
+                                    <span class="badge bg-warning rounded-pill">Pending Approval</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2">Registered On</h6>
+                            <div>{{ candidate.registration_date.strftime('%d-%m-%Y %H:%M') if candidate.registration_date else 'Not available' }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2">Ward/Area</h6>
+                            <div>{{ candidate.ward_number or 'Not specified' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-primary-soft p-2 me-3">
+                                    <i class="fas fa-user text-primary"></i>
+                                </div>
+                                <h6 class="mb-0">Candidate Information</h6>
+                            </div>
+                            <div class="ps-4 ms-2 border-start border-light">
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <span class="text-muted">Full Name</span>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <strong>{{ current_user.name }}</strong>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <span class="text-muted">Contact</span>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div>{{ current_user.email }}</div>
+                                        <div>{{ current_user.contact or 'No contact information provided' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if candidate.manifesto %}
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-info-soft p-2 me-3">
+                                    <i class="fas fa-scroll text-info"></i>
+                                </div>
+                                <h6 class="mb-0">Manifesto</h6>
+                            </div>
+                            <div class="ps-4 ms-2 border-start border-light">
+                                <p class="text-muted">{{ candidate.manifesto }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Election Information Card -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-vote-yea text-primary me-2"></i>Election Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2 small">Status</h6>
+                        <div>
+                            {% if not election.is_active %}
+                                <span class="badge bg-secondary rounded-pill">Inactive</span>
+                            {% elif election.get_status() == 'upcoming' %}
+                                <span class="badge bg-info rounded-pill">Upcoming</span>
+                            {% elif election.get_status() == 'active' %}
+                                <span class="badge bg-success rounded-pill">Active</span>
+                            {% elif election.get_status() == 'completed' %}
+                                <span class="badge bg-warning rounded-pill">Completed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2 small">Election Period</h6>
+                        <div class="small mb-1">
+                            <i class="far fa-calendar-alt text-muted me-1"></i> Start:
+                            <span class="text-dark">{{ election.start_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                        </div>
+                        <div class="small">
+                            <i class="far fa-calendar-check text-muted me-1"></i> End:
+                            <span class="text-dark">{{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                        </div>
+                    </div>
+                    {% if election.description %}
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2 small">Description</h6>
+                        <p class="small text-muted">{{ election.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Notes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light border mb-0">
+                        <p class="small mb-2"><i class="fas fa-check-circle text-success me-1"></i> Your application status is 
+                            <strong>
+                                {% if candidate.approval_status == 'approved' %}approved{% 
+                                elif candidate.approval_status == 'rejected' %}rejected{% 
+                                elif candidate.approval_status == 'pending' %}pending review{% endif %}
+                            </strong>.
+                        </p>
+                        
+                        {% if candidate.approval_status == 'pending' %}
+                        <p class="small mb-0">You will be notified once the administrator reviews your application.</p>
+                        {% elif candidate.approval_status == 'rejected' %}
+                        <p class="small mb-0">Your application was not approved. You may edit and resubmit if the election is still open.</p>
+                        {% elif candidate.approval_status == 'approved' %}
+                        <p class="small mb-0">Congratulations! Your candidacy has been approved for this election.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-success-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-info-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+</style>
+{% endblock %} 

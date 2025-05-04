@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #e0e0e0;
+      }
+      .cls-2 {
+        fill: #1976d2;
+      }
+      .cls-3 {
+        fill: #2196f3;
+      }
+      .cls-4 {
+        fill: #ffffff;
+      }
+      .cls-5 {
+        fill: #bbdefb;
+      }
+      .cls-6 {
+        fill: #64b5f6;
+      }
+      .cls-7 {
+        fill: #42a5f5;
+      }
+      .cls-8 {
+        fill: #90caf9;
+      }
+      .cls-9 {
+        fill: #0d47a1;
+      }
+      .check {
+        fill: none;
+        stroke: #4caf50;
+        stroke-width: 20;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 180;
+        stroke-dashoffset: 180;
+        animation: draw 1s ease forwards;
+      }
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect class="cls-1" x="0" y="0" width="800" height="600"/>
+  
+  <!-- Ballot Box -->
+  <rect class="cls-2" x="400" y="250" width="200" height="200" rx="10"/>
+  <rect class="cls-3" x="400" y="250" width="200" height="40"/>
+  <rect class="cls-8" x="475" y="270" width="50" height="10"/>
+  
+  <!-- Ballot Paper going into box -->
+  <rect class="cls-4" x="450" y="150" width="100" height="150" rx="5" transform="rotate(-15, 450, 150)"/>
+  <line class="cls-3" x1="460" y1="170" x2="520" y2="170" stroke-width="2"/>
+  <line class="cls-3" x1="460" y1="190" x2="520" y2="190" stroke-width="2"/>
+  <line class="cls-3" x1="460" y1="210" x2="520" y2="210" stroke-width="2"/>
+  <line class="cls-3" x1="460" y1="230" x2="520" y2="230" stroke-width="2"/>
+  
+  <!-- Check Mark -->
+  <path class="check" d="M480,210 L500,240 L540,180"/>
+  
+  <!-- Person -->
+  <circle class="cls-6" cx="250" cy="180" r="70"/>
+  <rect class="cls-7" x="220" y="250" width="60" height="120"/>
+  <rect class="cls-7" x="190" y="270" width="30" height="100"/>
+  <rect class="cls-7" x="280" y="270" width="30" height="100"/>
+  
+  <!-- Thinking Bubble -->
+  <circle class="cls-4" cx="350" cy="120" r="40"/>
+  <circle class="cls-4" cx="310" cy="140" r="20"/>
+  <circle class="cls-4" cx="290" cy="160" r="10"/>
+  
+  <!-- Voting Symbols in Bubble -->
+  <text x="350" y="125" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#1976d2">VOTE</text>
+  
+  <!-- Decorative Elements -->
+  <circle class="cls-5" cx="150" cy="500" r="50"/>
+  <circle class="cls-5" cx="650" cy="100" r="40"/>
+  <circle class="cls-5" cx="700" cy="500" r="30"/>
+  <circle class="cls-5" cx="100" cy="150" r="20"/>
+  
+  <rect class="cls-9" x="160" y="450" width="100" height="30" rx="15"/>
+  <rect class="cls-9" x="540" y="450" width="100" height="30" rx="15"/>
+</svg> 

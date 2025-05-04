@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Vote Confirmation - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>Vote Successfully Cast</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="py-4">
+                    <i class="fas fa-vote-yea fa-5x text-success mb-4"></i>
+                    
+                    <h3>Thank You for Voting!</h3>
+                    <p class="lead">Your vote in <strong>{{ election.title }}</strong> has been securely recorded.</p>
+                    
+                    <div class="alert alert-success my-4">
+                        <h5 class="mb-2">Your Reference ID:</h5>
+                        <p class="h3 mb-0 font-monospace">{{ reference_id }}</p>
+                        <small class="text-muted">Please save this reference ID for your records. It can be used to verify your vote was counted.</small>
+                    </div>
+                    
+                    <p>Your participation helps strengthen our democratic processes.</p>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('voter.dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-1"></i> Return to Dashboard
+                    </a>
+                    <a href="{{ url_for('voter.voting_history') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-history me-1"></i> View Voting History
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="fas fa-shield-alt text-primary me-2"></i>Your Vote is Secure</h5>
+                <p class="mb-0">Your vote has been securely stored in our system. While your participation is recorded, your specific choice remains confidential. Election results will be available after the voting period closes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

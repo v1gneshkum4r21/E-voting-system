@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Candidate Approvals - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="mb-2"><i class="fas fa-user-check me-2 text-primary"></i>Pending Candidate Approvals</h2>
+                <p class="text-muted mb-0">Review and approve or reject candidate applications for elections.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list-alt text-primary me-2"></i>Candidates Awaiting Approval
+                {% if candidates %}
+                    <span class="badge bg-danger ms-2">{{ candidates|length }}</span>
+                {% endif %}
+            </h5>
+            <a href="{{ url_for('admin.elections') }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                <i class="fas fa-arrow-left me-1"></i> Back to Elections
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if candidates %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Candidate Name</th>
+                                <th>Election</th>
+                                <th>Ward/Area</th>
+                                <th>Application Date</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for candidate in candidates %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-medium">{{ candidate.name }}</div>
+                                        <small class="text-muted">{{ candidate.user.email }}</small>
+                                    </td>
+                                    <td>{{ candidate.election_title }}</td>
+                                    <td>{{ candidate.ward_number or 'N/A' }}</td>
+                                    <td class="text-nowrap small">{{ candidate.created_at }}</td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-primary rounded-pill" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#viewModal{{ candidate.id }}">
+                                            <i class="fas fa-eye me-1"></i> View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info m-3 mb-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-info-circle me-3 fs-4"></i>
+                        <div>No pending candidate applications at this time.</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Candidate Detail Modals -->
+{% for candidate in candidates %}
+    <div class="modal fade" id="viewModal{{ candidate.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ candidate.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="viewModalLabel{{ candidate.id }}">
+                        <i class="fas fa-user-tie text-primary me-2"></i>{{ candidate.name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <div class="col-md-8">
+                            <div class="card border shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title mb-0">Candidate Information</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-bordered mb-0">
+                                        <tr>
+                                            <th class="bg-light" style="width: 30%">Name</th>
+                                            <td>{{ candidate.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">Email</th>
+                                            <td>{{ candidate.user.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">Contact</th>
+                                            <td>{{ candidate.user.contact or 'Not provided' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">Ward/Area</th>
+                                            <td>{{ candidate.ward_number or 'Not specified' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">Election</th>
+                                            <td>{{ candidate.election_title }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="card border shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h6 class="card-title mb-0">Manifesto</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if candidate.manifesto %}
+                                        <div class="manifesto-content">
+                                            {{ candidate.manifesto }}
+                                        </div>
+                                    {% else %}
+                                        <div class="text-muted fst-italic">No manifesto provided.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            {% if candidate.logo_path %}
+                                <div class="card border shadow-sm mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="card-title mb-0">Candidate Logo</h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename=candidate.logo_path) }}" 
+                                             class="img-fluid rounded" alt="Candidate Logo">
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if candidate.user.photo_path %}
+                                <div class="card border shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <h6 class="card-title mb-0">Candidate Photo</h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename=candidate.user.photo_path) }}" 
+                                             class="img-fluid rounded" alt="Candidate Photo">
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if not candidate.logo_path and not candidate.user.photo_path %}
+                                <div class="card border shadow-sm">
+                                    <div class="card-body text-center py-5">
+                                        <i class="fas fa-user-circle text-muted fa-5x mb-3"></i>
+                                        <p class="text-muted">No photos or logos uploaded</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 d-flex justify-content-between">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Close
+                    </button>
+                    <div>
+                        <form method="POST" action="{{ url_for('admin.reject_candidate', candidate_id=candidate.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-danger rounded-pill me-2">
+                                <i class="fas fa-ban me-1"></i> Reject Candidate
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.approve_candidate', candidate_id=candidate.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-success rounded-pill">
+                                <i class="fas fa-check-circle me-1"></i> Approve Candidate
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .manifesto-content {
+        white-space: pre-line;
+        font-size: 0.95rem;
+    }
+</style>
+{% endblock %} 

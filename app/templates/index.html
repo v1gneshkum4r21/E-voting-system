@@ -1,0 +1,807 @@
+{% extends 'base.html' %}
+
+{% block title %}E-Voting System - Secure Digital Democracy{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Particles -->
+<div class="hero-wrapper position-relative overflow-hidden">
+    <div id="particles-js" class="position-absolute top-0 start-0 w-100 h-100"></div>
+    <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+    <div class="container position-relative py-5 mt-3">
+        <div class="row min-vh-75 align-items-center py-5">
+            <div class="col-lg-6 text-center text-lg-start" data-aos="fade-right" data-aos-duration="1000">
+                <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm mb-3">Trusted by Organizations</span>
+                <h1 class="display-3 fw-bold text-white mb-3">Modern Digital<br><span class="highlight-text">Voting System</span></h1>
+                <p class="lead text-white opacity-80 mb-4">Our platform ensures secure, transparent, and accessible elections with industry-leading security and real-time results.</p>
+                
+                <div class="d-flex flex-column flex-sm-row gap-3 mt-4 mb-5">
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-white btn-lg px-4 shadow-sm">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    {% else %}
+                        {% if current_user.is_admin() %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-white btn-lg px-4 shadow-sm">
+                                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                            </a>
+                        {% elif current_user.is_voter() %}
+                            <a href="{{ url_for('voter.dashboard') }}" class="btn btn-white btn-lg px-4 shadow-sm">
+                                <i class="fas fa-vote-yea me-2"></i>Voter Dashboard
+                            </a>
+                        {% elif current_user.is_candidate() %}
+                            <a href="{{ url_for('candidate.dashboard') }}" class="btn btn-white btn-lg px-4 shadow-sm">
+                                <i class="fas fa-user-tie me-2"></i>Candidate Dashboard
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('voter.elections') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fas fa-chevron-right me-2"></i>Explore Elections
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="trust-icons d-flex align-items-center">
+                    <span class="me-3 text-white opacity-75 small">Trusted by:</span>
+                    <div class="d-flex align-items-center gap-4">
+                        <i class="fas fa-university fa-lg text-white opacity-75"></i>
+                        <i class="fas fa-building fa-lg text-white opacity-75"></i>
+                        <i class="fas fa-landmark fa-lg text-white opacity-75"></i>
+                        <i class="fas fa-school fa-lg text-white opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+                <div class="hero-image-wrapper text-center position-relative mt-5 mt-lg-0">
+                    <div class="hero-floating-card hero-card-1 position-absolute shadow-lg p-3 bg-white rounded-lg text-start">
+                        <div class="d-flex align-items-center">
+                            <div class="badge-primary rounded-circle p-2 me-2">
+                                <i class="fas fa-shield-alt text-white"></i>
+                            </div>
+                            <span class="fw-semibold text-dark">Secure Voting</span>
+                        </div>
+                    </div>
+                    <div class="hero-floating-card hero-card-2 position-absolute shadow-lg p-3 bg-white rounded-lg text-start">
+                        <div class="d-flex align-items-center">
+                            <div class="badge-success rounded-circle p-2 me-2">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            <span class="fw-semibold text-dark">Live Results</span>
+                        </div>
+                    </div>
+                    <div class="hero-floating-card hero-card-3 position-absolute shadow-lg p-3 bg-white rounded-lg text-start">
+                        <div class="d-flex align-items-center">
+                            <div class="badge-info rounded-circle p-2 me-2">
+                                <i class="fas fa-mobile-alt text-white"></i>
+                            </div>
+                            <span class="fw-semibold text-dark">Vote Anywhere</span>
+                        </div>
+                    </div>
+                    <img src="/static/images/voting.svg" alt="Digital Voting" class="img-fluid hero-main-image" width="550">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="wave-divider">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100">
+            <path fill="#ffffff" fill-opacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+        </svg>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container py-5">
+    <div class="row g-4 text-center" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-md-3 col-6">
+            <div class="counter-box p-4">
+                <i class="fas fa-vote-yea fa-2x text-primary mb-3"></i>
+                <h3 class="counter fw-bold">1000<span>+</span></h3>
+                <p class="counter-text text-muted">Votes Cast</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="counter-box p-4">
+                <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                <h3 class="counter fw-bold">500<span>+</span></h3>
+                <p class="counter-text text-muted">Active Users</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="counter-box p-4">
+                <i class="fas fa-tasks fa-2x text-primary mb-3"></i>
+                <h3 class="counter fw-bold">100<span>%</span></h3>
+                <p class="counter-text text-muted">Success Rate</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="counter-box p-4">
+                <i class="fas fa-lock fa-2x text-primary mb-3"></i>
+                <h3 class="counter fw-bold">256<span>bit</span></h3>
+                <p class="counter-text text-muted">Encryption</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5">
+    <div class="row mb-5 text-center">
+        <div class="col-lg-8 mx-auto" data-aos="fade-up">
+            <span class="badge bg-primary rounded-pill px-3 py-2 mb-2">Our Features</span>
+            <h2 class="display-5 fw-bold mb-3">Why Choose Our Platform?</h2>
+            <p class="lead text-muted">Our e-voting system combines security, convenience, and transparency</p>
+        </div>
+    </div>
+    
+    <div class="row g-5 align-items-center">
+        <div class="col-lg-6" data-aos="fade-right">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="feature-card p-4 bg-white rounded-lg shadow-sm h-100">
+                        <div class="feature-icon rounded-circle bg-primary bg-opacity-10 p-3 mb-4 d-inline-block">
+                            <i class="fas fa-shield-alt text-primary fa-2x"></i>
+                        </div>
+                        <h4 class="feature-title">Secure Voting</h4>
+                        <p class="text-muted mb-0">Industry-standard encryption and authentication protects your vote.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card p-4 bg-white rounded-lg shadow-sm h-100 mt-md-5">
+                        <div class="feature-icon rounded-circle bg-success bg-opacity-10 p-3 mb-4 d-inline-block">
+                            <i class="fas fa-mobile-alt text-success fa-2x"></i>
+                        </div>
+                        <h4 class="feature-title">Vote Anywhere</h4>
+                        <p class="text-muted mb-0">Vote from any device with internet access at your convenience.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card p-4 bg-white rounded-lg shadow-sm h-100">
+                        <div class="feature-icon rounded-circle bg-info bg-opacity-10 p-3 mb-4 d-inline-block">
+                            <i class="fas fa-chart-pie text-info fa-2x"></i>
+                        </div>
+                        <h4 class="feature-title">Real-time Results</h4>
+                        <p class="text-muted mb-0">Access comprehensive election analytics with detailed insights.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card p-4 bg-white rounded-lg shadow-sm h-100 mt-md-5">
+                        <div class="feature-icon rounded-circle bg-warning bg-opacity-10 p-3 mb-4 d-inline-block">
+                            <i class="fas fa-universal-access text-warning fa-2x"></i>
+                        </div>
+                        <h4 class="feature-title">Accessible</h4>
+                        <p class="text-muted mb-0">Designed to be easy to use for all voters regardless of technical skill.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+            <div class="features-image text-center px-4">
+                <img src="/static/images/voting.svg" alt="Voting Features" class="img-fluid feature-main-image rounded-3 shadow-lg" width="450">
+                <div class="feature-shape-1 position-absolute"></div>
+                <div class="feature-shape-2 position-absolute"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Elections Showcase -->
+<div class="bg-light py-5 my-5">
+    <div class="container py-4">
+        <div class="row mb-5 text-center">
+            <div class="col-lg-8 mx-auto" data-aos="fade-up">
+                <span class="badge bg-primary rounded-pill px-3 py-2 mb-2">Elections</span>
+                <h2 class="display-5 fw-bold mb-3">Active & Completed Elections</h2>
+                <p class="lead text-muted">Participate in ongoing elections or review past results</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Active Elections -->
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                    <div class="card-header bg-primary text-white p-4 border-0 d-flex justify-content-between align-items-center">
+                        <h3 class="h4 mb-0"><i class="fas fa-vote-yea me-2"></i>Active Elections</h3>
+                        <span class="badge bg-danger pulse-animation">LIVE</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if active_elections %}
+                            <div class="list-group list-group-flush">
+                                {% for election in active_elections %}
+                                    <a href="{% if current_user.is_authenticated and current_user.is_voter() %}{{ url_for('voter.view_election', election_id=election.id) }}{% else %}{{ url_for('auth.login') }}{% endif %}" 
+                                       class="list-group-item list-group-item-action p-4 border-0 d-flex align-items-center">
+                                        <div class="election-icon rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                            <i class="fas fa-poll-h text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between">
+                                                <h5 class="mb-1 fw-bold">{{ election.title }}</h5>
+                                                <span class="badge bg-success rounded-pill">Active</span>
+                                            </div>
+                                            <p class="mb-1 text-muted small">{{ election.description }}</p>
+                                            <div class="d-flex align-items-center mt-2">
+                                                <div class="me-3">
+                                                    <i class="far fa-clock text-muted me-1"></i>
+                                                    <small class="text-muted">{{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</small>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-user-check text-muted me-1"></i>
+                                                    <small class="text-muted">Public Election</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                            <div class="text-center p-4">
+                                <a href="{% if current_user.is_authenticated and current_user.is_voter() %}{{ url_for('voter.elections') }}{% else %}{{ url_for('auth.login') }}{% endif %}" 
+                                   class="btn btn-outline-primary rounded-pill px-4">
+                                    <i class="fas fa-arrow-right me-2"></i>View All Elections
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-4">
+                                    <i class="fas fa-calendar-times fa-4x text-muted opacity-50"></i>
+                                </div>
+                                <h5>No Active Elections</h5>
+                                <p class="text-muted">There are no active elections at this time. Please check back later.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending Candidates -->
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                    <div class="card-header bg-secondary text-white p-4 border-0 d-flex justify-content-between align-items-center">
+                        <h3 class="h4 mb-0"><i class="fas fa-user-tie me-2"></i>Trending Candidates</h3>
+                        <span class="badge bg-info">Popular</span>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if trending_candidates %}
+                            <div class="row g-3">
+                                {% for candidate in trending_candidates %}
+                                    <div class="col-md-6">
+                                        <div class="candidate-card card border-0 shadow-sm h-100 position-relative overflow-hidden">
+                                            {% if candidate.status == 'Leading' %}
+                                                <div class="position-absolute top-0 end-0 p-2">
+                                                    <span class="badge bg-success rounded-pill">
+                                                        <i class="fas fa-crown me-1"></i>Leading
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                            <div class="card-body text-center p-4">
+                                                <div class="avatar-circle mx-auto mb-3">
+                                                    <div class="candidate-avatar rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px; background-color: #f0f0f0;">
+                                                        <i class="fas fa-user fa-2x text-primary"></i>
+                                                    </div>
+                                                </div>
+                                                <h5 class="card-title fw-bold mb-0">{{ candidate.candidate_name }}</h5>
+                                                <p class="card-text small text-muted mb-2">{{ candidate.election_title }}</p>
+                                                <div class="candidate-badge mt-2 d-flex justify-content-center gap-2">
+                                                    {% if candidate.status == 'Leading' %}
+                                                        <span class="badge bg-success">Leading</span>
+                                                    {% elif candidate.status == 'Popular' %}
+                                                        <span class="badge bg-primary">Popular</span>
+                                                    {% else %}
+                                                        <span class="badge bg-info">Rising</span>
+                                                    {% endif %}
+                                                    {% if candidate.party %}
+                                                        <span class="badge bg-secondary">{{ candidate.party }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="card-footer bg-light text-center p-2 border-0">
+                                                <a href="{% if current_user.is_authenticated %}{{ url_for('voter.view_election', election_id=candidate.election_id) }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                    <i class="fas fa-info-circle me-1"></i>View Election
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-4">
+                                    <i class="fas fa-users-slash fa-4x text-muted opacity-50"></i>
+                                </div>
+                                <h5>No Trending Candidates</h5>
+                                <p class="text-muted">There are no trending candidates at this time.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Completed Elections -->
+<div class="container py-5">
+    <div class="row mb-5 text-center">
+        <div class="col-lg-8 mx-auto" data-aos="fade-up">
+            <span class="badge bg-secondary rounded-pill px-3 py-2 mb-2">Results</span>
+            <h2 class="display-5 fw-bold mb-3">Recent Election Results</h2>
+            <p class="lead text-muted">View outcomes from our past elections</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        {% if completed_elections %}
+            {% for election in completed_elections %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                        <div class="card-header bg-light p-4 border-0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-secondary">Completed</span>
+                                <small class="text-muted">
+                                    <i class="far fa-calendar-check me-1"></i>
+                                    {{ election.end_time.strftime('%d-%m-%Y') }}
+                                </small>
+                            </div>
+                            <h4 class="fw-bold mb-1">{{ election.title }}</h4>
+                            <p class="text-muted small mb-0">{{ election.description }}</p>
+                        </div>
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3">Results Summary</h6>
+                            {% set results = completed_election_results[election.id] %}
+                            {% if results and results.candidates %}
+                                <div class="results-list">
+                                    {% for candidate in results.candidates[:3] %}
+                                        {% set vote_percentage = (candidate.votes / results.total_votes * 100) if results.total_votes > 0 else 0 %}
+                                        <div class="result-item d-flex align-items-center mb-3">
+                                            <div class="ranking-circle {% if loop.index == 1 %}bg-success{% elif loop.index == 2 %}bg-primary{% else %}bg-info{% endif %} text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px; min-width: 36px;">
+                                                {{ loop.index }}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="fw-bold mb-0">{{ candidate.name }}</h6>
+                                                <div class="progress rounded-pill mt-2" style="height: 8px;">
+                                                    <div class="progress-bar {% if loop.index == 1 %}bg-success{% elif loop.index == 2 %}bg-primary{% else %}bg-info{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ vote_percentage }}%;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="ms-3">
+                                                <span class="badge {% if loop.index == 1 %}bg-success{% elif loop.index == 2 %}bg-primary{% else %}bg-info{% endif %} rounded-pill">
+                                                    {{ candidate.votes }} votes
+                                                </span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <a href="{% if current_user.is_authenticated %}{{ url_for('voter.view_election', election_id=election.id) }}{% else %}{{ url_for('auth.login') }}{% endif %}" 
+                                       class="btn btn-sm btn-outline-secondary rounded-pill px-4">
+                                        <i class="fas fa-chart-bar me-1"></i>Full Results
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info border-0 shadow-sm">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No results available for this election.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center">
+                <div class="p-5 bg-light rounded-3">
+                    <i class="fas fa-chart-area fa-4x text-muted opacity-50 mb-3"></i>
+                    <h4>No Completed Elections</h4>
+                    <p class="text-muted">There are no completed elections with results at this time.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="bg-primary text-white py-5 mt-5">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8 text-center text-lg-start mb-4 mb-lg-0" data-aos="fade-right">
+                <h2 class="display-5 fw-bold mb-3">Ready to participate in democracy?</h2>
+                <p class="lead mb-0">Join our platform today and make your voice heard in upcoming elections.</p>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end" data-aos="fade-left">
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow">
+                        <i class="fas fa-user-plus me-2"></i>Sign Up Now
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('voter.elections') }}" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow">
+                        <i class="fas fa-vote-yea me-2"></i>View Elections
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-wrapper {
+        background-color: var(--primary-color);
+        margin-top: -1.5rem;
+        color: white;
+    }
+    
+    .hero-overlay {
+        background: linear-gradient(135deg, rgba(36, 16, 82, 0.95), rgba(49, 39, 131, 0.85));
+        z-index: 1;
+    }
+    
+    #particles-js {
+        z-index: 0;
+    }
+    
+    .hero-wrapper .container {
+        z-index: 2;
+    }
+    
+    .min-vh-75 {
+        min-height: 75vh;
+    }
+    
+    .opacity-80 {
+        opacity: 0.8;
+    }
+    
+    .hero-main-image {
+        filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.3));
+        animation: float 6s ease-in-out infinite;
+        max-width: 100%;
+        z-index: 3;
+        position: relative;
+    }
+    
+    .hero-image-wrapper {
+        margin-top: 2rem;
+    }
+    
+    .wave-divider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 2;
+    }
+    
+    .highlight-text {
+        color: #76daff;
+        text-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
+    }
+    
+    .hero-floating-card {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        z-index: 3;
+    }
+    
+    .hero-card-1 {
+        top: 5%;
+        left: 15%;
+        animation: float-card 4s ease-in-out infinite;
+    }
+    
+    .hero-card-2 {
+        top: 35%;
+        right: 5%;
+        animation: float-card 5s ease-in-out infinite 1s;
+    }
+    
+    .hero-card-3 {
+        bottom: 15%;
+        left: 10%;
+        animation: float-card 4.5s ease-in-out infinite 0.5s;
+    }
+    
+    .btn-white {
+        background-color: white;
+        color: var(--primary-color);
+    }
+    
+    .btn-white:hover {
+        background-color: #f8f9fa;
+        color: var(--secondary-color);
+    }
+    
+    /* Badge Styles */
+    .badge-primary, .badge-success, .badge-info, .badge-warning {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .badge-primary {
+        background-color: var(--primary-color);
+    }
+    
+    .badge-success {
+        background-color: var(--success-color);
+    }
+    
+    .badge-info {
+        background-color: var(--info-color);
+    }
+    
+    .badge-warning {
+        background-color: var(--warning-color);
+    }
+    
+    /* Counter Section */
+    .counter-box {
+        border-radius: 15px;
+        background-color: white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .counter-box:hover {
+        transform: translateY(-5px);
+    }
+    
+    .counter {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        line-height: 1.2;
+    }
+    
+    .counter span {
+        font-size: 1.5rem;
+        color: var(--secondary-color);
+    }
+    
+    /* Features Section */
+    .feature-card {
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+    }
+    
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .feature-main-image {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .feature-shape-1 {
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        opacity: 0.1;
+        top: -30px;
+        left: 20%;
+        z-index: 1;
+    }
+    
+    .feature-shape-2 {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background-color: var(--secondary-color);
+        opacity: 0.1;
+        bottom: -20px;
+        right: 20%;
+        z-index: 1;
+    }
+    
+    /* Elections Section */
+    .avatar-circle {
+        position: relative;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .candidate-card {
+        transition: all 0.3s ease;
+    }
+    
+    .candidate-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .ranking-circle {
+        font-weight: 600;
+    }
+    
+    /* Animations */
+    @keyframes float {
+        0% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+        100% {
+            transform: translateY(0px);
+        }
+    }
+    
+    @keyframes float-card {
+        0% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+        100% {
+            transform: translateY(0px);
+        }
+    }
+    
+    .pulse-animation {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.05);
+            opacity: 0.8;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize particles.js
+        if (typeof particlesJS !== 'undefined') {
+            particlesJS("particles-js", {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.3,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.2,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 0.6
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+        }
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+{% endblock %} 

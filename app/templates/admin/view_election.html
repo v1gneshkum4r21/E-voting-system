@@ -1,0 +1,612 @@
+{% extends 'base.html' %}
+
+{% block title %}View Election - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center">
+                    {% if not election.is_active %}
+                        <span class="badge bg-secondary me-3">Inactive</span>
+                    {% elif election.get_status() == 'upcoming' %}
+                        <span class="badge bg-info me-3">Upcoming</span>
+                    {% elif election.get_status() == 'active' %}
+                        <span class="badge bg-success pulse-animation me-3">Active</span>
+                    {% elif election.get_status() == 'completed' %}
+                        <span class="badge bg-warning me-3">Completed</span>
+                    {% endif %}
+                    <h2 class="mb-0"><i class="fas fa-vote-yea me-2 text-primary"></i>{{ election.title }}</h2>
+                </div>
+                <p class="text-muted mt-2 mb-0">{{ election.description }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <div class="btn-group">
+                    <a href="{{ url_for('admin.edit_election', election_id=election.id) }}" class="btn btn-outline-primary rounded-pill">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    <a href="{{ url_for('admin.assign_voters', election_id=election.id) }}" class="btn btn-outline-info rounded-pill mx-2">
+                        <i class="fas fa-user-plus me-1"></i> Assign Voters
+                    </a>
+                    <button type="button" class="btn btn-outline-danger rounded-pill" onclick="confirmDelete({{ election.id }}, '{{ election.title }}')">
+                        <i class="fas fa-trash me-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Election Details</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-calendar-alt me-2"></i> Start Time</span>
+                            <span>{{ election.start_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-calendar-check me-2"></i> End Time</span>
+                            <span>{{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-clock me-2"></i> Created</span>
+                            <span>{{ election.created_at }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="fas fa-toggle-on me-2"></i> Active</span>
+                            <span>
+                                {% if election.is_active %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                {% endif %}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- If election is completed, show export option -->
+            {% if election.get_status() == 'completed' %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="card-title mb-0"><i class="fas fa-file-export text-primary me-2"></i>Export Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">This election has concluded. You can export the results for records or analysis.</p>
+                        <a href="{{ url_for('admin.export_election_results', election_id=election.id) }}" class="btn btn-primary rounded-pill w-100">
+                            <i class="fas fa-download me-1"></i> Download CSV
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Candidates Section -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-user-tie text-primary me-2"></i>Candidates</h5>
+                    <span class="badge bg-primary rounded-pill">{{ candidates|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if candidates %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Ward</th>
+                                        {% if results %}
+                                            <th>Votes</th>
+                                            <th>Percentage</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for candidate in candidates %}
+                                        <tr>
+                                            <td class="fw-medium">{{ candidate.name }}</td>
+                                            <td>
+                                                {% if candidate.approval_status == 'approved' %}
+                                                    <span class="badge bg-success">Approved</span>
+                                                {% elif candidate.approval_status == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% elif candidate.approval_status == 'rejected' %}
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ candidate.ward_number or 'N/A' }}</td>
+                                            {% if results %}
+                                                {% set found = false %}
+                                                {% for result in results.candidates %}
+                                                    {% if result.candidate_id == candidate.id %}
+                                                        <td><span class="badge bg-primary">{{ result.votes }}</span></td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="progress flex-grow-1 me-2" style="height: 8px; width: 80px;">
+                                                                    <div class="progress-bar" role="progressbar" style="width: {{ result.percentage }}%"></div>
+                                                                </div>
+                                                                <span>{{ result.percentage }}%</span>
+                                                            </div>
+                                                        </td>
+                                                        {% set found = true %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if not found %}
+                                                    <td><span class="badge bg-secondary">0</span></td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="progress flex-grow-1 me-2" style="height: 8px; width: 80px;">
+                                                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                                            </div>
+                                                            <span>0%</span>
+                                                        </div>
+                                                    </td>
+                                                {% endif %}
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3 mb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3 fs-4"></i>
+                                <div>No candidates have registered for this election yet.</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Results Section (if completed or active) -->
+            {% if results %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar text-primary me-2"></i>Election Results
+                        </h5>
+                        
+                        {% if election.get_status() == 'active' %}
+                            <span class="badge bg-success pulse-animation" id="live-indicator">
+                                <i class="fas fa-circle me-1"></i> LIVE
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="card border h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold mb-3">Voting Statistics</h6>
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item px-0 d-flex justify-content-between border-0">
+                                                <span class="text-muted">Total Eligible Voters:</span>
+                                                <span class="fw-medium" id="total-eligible">{{ results.total_eligible }}</span>
+                                            </div>
+                                            <div class="list-group-item px-0 d-flex justify-content-between border-0">
+                                                <span class="text-muted">Total Votes Cast:</span>
+                                                <span class="fw-medium" id="total-votes">{{ results.total_votes }}</span>
+                                            </div>
+                                            <div class="list-group-item px-0 d-flex justify-content-between border-0">
+                                                <span class="text-muted">Voter Turnout:</span>
+                                                <span class="fw-medium" id="turnout-percentage">{{ results.turnout_percentage }}%</span>
+                                            </div>
+                                            {% if results.total_votes > 0 %}
+                                                <div class="list-group-item px-0 d-flex justify-content-between border-0" id="winner-section">
+                                                    <span class="text-muted">Winner:</span>
+                                                    <span class="fw-medium text-success" id="winner-name">{{ results.winner.candidate_name }}</span>
+                                                </div>
+                                                <div class="list-group-item px-0 d-flex justify-content-between border-0">
+                                                    <span class="text-muted">Winning Votes:</span>
+                                                    <span class="fw-medium" id="winner-votes">{{ results.winner.votes }} ({{ results.winner.percentage }}%)</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold mb-3">Actions</h6>
+                                        <div class="d-grid gap-2">
+                                            <a href="{{ url_for('admin.export_election_results', election_id=election.id) }}" class="btn btn-primary rounded-pill">
+                                                <i class="fas fa-file-export me-1"></i> Export Results to CSV
+                                            </a>
+                                            <a href="{{ url_for('admin.assign_voters', election_id=election.id) }}" class="btn btn-outline-info rounded-pill">
+                                                <i class="fas fa-user-plus me-1"></i> Manage Voters
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="mb-3 fw-bold">Results Visualization</h6>
+                        <div class="mb-3" id="results-container">
+                            <!-- Results bars with better visualization -->
+                            {% for candidate in results.candidates %}
+                                <div class="mb-4 result-item" data-candidate-id="{{ candidate.candidate_id }}">
+                                    <div class="d-flex justify-content-between mb-2 align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="result-avatar bg-primary-soft text-primary me-2">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <span class="fw-medium">{{ candidate.candidate_name }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-primary" id="votes-{{ candidate.candidate_id }}">{{ candidate.votes }}</span>
+                                            votes
+                                            (<span id="percentage-{{ candidate.candidate_id }}">{{ candidate.percentage }}</span>%)
+                                        </div>
+                                    </div>
+                                    <div class="progress" style="height: 24px; border-radius: 12px;">
+                                        <div class="progress-bar bg-primary progress-bar-striped 
+                                            {% if results.candidates|first == candidate %}progress-bar-animated{% endif %}" 
+                                             id="progress-{{ candidate.candidate_id }}"
+                                             role="progressbar" 
+                                             style="width: {{ candidate.percentage }}%;" 
+                                             aria-valuenow="{{ candidate.percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {% if candidate.percentage > 10 %}
+                                                {{ candidate.percentage }}%
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if results.candidates|first == candidate %}
+                                        <div class="text-end mt-1">
+                                            <span class="badge bg-success">Winner</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the election:</p>
+                <p class="fw-bold text-center my-3" id="electionTitle"></p>
+                <div class="alert alert-warning">
+                    <div class="d-flex">
+                        <i class="fas fa-exclamation-circle me-2 mt-1"></i>
+                        <div>
+                            This action cannot be undone. Elections with existing votes will be marked as inactive instead of being deleted.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" action="">
+                    <button type="submit" class="btn btn-danger rounded-pill">
+                        <i class="fas fa-trash me-1"></i> Delete Election
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .result-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-success-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-info-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+    
+    .bg-warning-soft {
+        background-color: rgba(var(--bs-warning-rgb), 0.15);
+    }
+    
+    .bg-danger-soft {
+        background-color: rgba(var(--bs-danger-rgb), 0.15);
+    }
+    
+    /* Animation for the live badge */
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(id, title) {
+        document.getElementById('electionTitle').textContent = title;
+        document.getElementById('deleteForm').action = "{{ url_for('admin.delete_election_route', election_id=0) }}".replace('0', id);
+        var myModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        myModal.show();
+    }
+
+    {% if election.get_status() == 'active' or election.get_status() == 'completed' %}
+    // Live results functionality
+    let resultsLoaded = false;
+    let updateInterval;
+    let previousVotes = {};
+    let countAnimations = {};
+
+    function fetchLiveResults() {
+        fetch("{{ url_for('admin.live_election_results', election_id=election.id) }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error fetching results:', data.error);
+                    return;
+                }
+                
+                // If this is our first load, store initial vote counts
+                if (!resultsLoaded) {
+                    data.candidates.forEach(candidate => {
+                        previousVotes[candidate.candidate_id] = candidate.votes;
+                    });
+                    resultsLoaded = true;
+                    
+                    // Update display without animation first time
+                    updateResultsDisplay(data);
+                    
+                    // Start animation sequence for initial load
+                    animateInitialResults(data);
+                } else {
+                    // Find and show vote changes
+                    data.candidates.forEach(candidate => {
+                        const candidateId = candidate.candidate_id;
+                        const oldVotes = previousVotes[candidateId] || 0;
+                        const newVotes = candidate.votes;
+                        
+                        if (newVotes > oldVotes) {
+                            // Show increment animation
+                            showVoteIncrement(candidateId, newVotes - oldVotes);
+                            
+                            // Set up counting animation
+                            startCountAnimation(candidateId, oldVotes, newVotes);
+                        } else {
+                            // Just update the value directly if no change or decrease
+                            document.getElementById(`votes-${candidateId}`).textContent = newVotes;
+                            
+                            // Update percentage
+                            const percentage = calculatePercentage(newVotes, data.total_votes);
+                            document.getElementById(`percentage-${candidateId}`).textContent = percentage;
+                            
+                            // Update progress bar
+                            const progressBar = document.getElementById(`progress-${candidateId}`);
+                            progressBar.style.width = `${percentage}%`;
+                            progressBar.setAttribute('aria-valuenow', percentage);
+                            if (percentage > 10) {
+                                progressBar.textContent = `${percentage}%`;
+                            } else {
+                                progressBar.textContent = '';
+                            }
+                        }
+                        
+                        // Update stored value
+                        previousVotes[candidateId] = newVotes;
+                    });
+                    
+                    // Update display stats
+                    updateResultsDisplay(data);
+                    
+                    // Re-sort results by votes
+                    sortResultsByVotes();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function startCountAnimation(candidateId, startValue, endValue) {
+        // Set up animation for this change
+        countAnimations[candidateId] = {
+            startValue: startValue,
+            endValue: endValue,
+            startTime: performance.now(),
+            duration: 1000
+        };
+        
+        // Start animation if not already running
+        if (!window.countAnimationFrame) {
+            window.countAnimationFrame = requestAnimationFrame(updateCountAnimations);
+        }
+    }
+
+    function animateInitialResults(data) {
+        // Create counting animations for each candidate
+        data.candidates.forEach(candidate => {
+            const candidateId = candidate.candidate_id;
+            startCountAnimation(candidateId, 0, candidate.votes);
+        });
+    }
+
+    function updateCountAnimations(timestamp) {
+        let stillAnimating = false;
+        
+        // Update all animations
+        for (const candidateId in countAnimations) {
+            const animation = countAnimations[candidateId];
+            const elapsed = timestamp - animation.startTime;
+            const progress = Math.min(elapsed / animation.duration, 1);
+            
+            if (progress < 1) {
+                stillAnimating = true;
+                const currentValue = Math.floor(animation.startValue + progress * (animation.endValue - animation.startValue));
+                
+                // Update vote count display
+                const voteElement = document.getElementById(`votes-${candidateId}`);
+                if (voteElement) {
+                    voteElement.textContent = currentValue;
+                }
+                
+                // Update progress bar width
+                const totalVotes = parseInt(document.getElementById('total-votes').textContent);
+                const percentage = calculatePercentage(currentValue, totalVotes);
+                
+                // Update percentage display
+                const percentageElement = document.getElementById(`percentage-${candidateId}`);
+                if (percentageElement) {
+                    percentageElement.textContent = percentage;
+                }
+                
+                const progressBar = document.getElementById(`progress-${candidateId}`);
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                    progressBar.setAttribute('aria-valuenow', percentage);
+                    if (percentage > 10) {
+                        progressBar.textContent = `${percentage}%`;
+                    } else {
+                        progressBar.textContent = '';
+                    }
+                }
+            } else {
+                // Animation complete for this candidate
+                delete countAnimations[candidateId];
+            }
+        }
+        
+        // Continue animation if needed
+        if (stillAnimating) {
+            window.countAnimationFrame = requestAnimationFrame(updateCountAnimations);
+        } else {
+            window.countAnimationFrame = null;
+        }
+    }
+
+    function calculatePercentage(votes, totalVotes) {
+        if (totalVotes <= 0) return 0;
+        return Math.round((votes / totalVotes) * 100 * 100) / 100; // Round to 2 decimal places
+    }
+
+    function updateResultsDisplay(data) {
+        // Update total votes
+        document.getElementById('total-votes').textContent = data.total_votes;
+        document.getElementById('total-eligible').textContent = data.total_eligible;
+        document.getElementById('turnout-percentage').textContent = data.turnout_percentage;
+        
+        // Update winner info if available
+        const winnerSection = document.getElementById('winner-section');
+        if (data.total_votes > 0 && data.winner) {
+            document.getElementById('winner-name').textContent = data.winner.candidate_name;
+            document.getElementById('winner-votes').textContent = `${data.winner.votes} (${data.winner.percentage}%)`;
+            if (winnerSection) {
+                winnerSection.style.display = 'flex';
+            }
+        } else if (winnerSection) {
+            winnerSection.style.display = 'none';
+        }
+    }
+
+    function sortResultsByVotes() {
+        const container = document.getElementById('results-container');
+        if (!container) return;
+        
+        const items = Array.from(container.querySelectorAll('.result-item'));
+        items.sort((a, b) => {
+            const aVotes = parseInt(a.querySelector('[id^="votes-"]').textContent);
+            const bVotes = parseInt(b.querySelector('[id^="votes-"]').textContent);
+            return bVotes - aVotes;
+        });
+        
+        // Clear container and re-append items in sorted order
+        container.innerHTML = '';
+        items.forEach(item => {
+            container.appendChild(item);
+        });
+        
+        // Add winner badge to the first item
+        if (items.length > 0) {
+            const firstItem = items[0];
+            let winnerBadge = firstItem.querySelector('.badge.bg-success');
+            
+            if (!winnerBadge && parseInt(firstItem.querySelector('[id^="votes-"]').textContent) > 0) {
+                const badgeContainer = document.createElement('div');
+                badgeContainer.className = 'text-end mt-1';
+                badgeContainer.innerHTML = '<span class="badge bg-success">Winner</span>';
+                firstItem.appendChild(badgeContainer);
+            }
+        }
+    }
+
+    // Start polling for updates
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchLiveResults(); // Initial fetch
+        
+        // Set up interval for live updates (every 5 seconds)
+        updateInterval = setInterval(fetchLiveResults, 5000);
+        
+        // Clean up when leaving the page
+        window.addEventListener('beforeunload', function() {
+            clearInterval(updateInterval);
+        });
+    });
+    {% endif %}
+</script>
+{% endblock %} 

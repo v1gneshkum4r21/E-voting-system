@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}My Voting History - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-history me-2"></i>My Voting History</h2>
+        <p class="lead">Record of all your past votes</p>
+    </div>
+    <div class="col-md-3 text-end">
+        <a href="{{ url_for('voter.dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Elections You've Voted In</h5>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Election</th>
+                                    <th>Candidate Voted For</th>
+                                    <th>Election Period</th>
+                                    <th>Vote Cast On</th>
+                                    <th>Reference ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vote in history %}
+                                    <tr>
+                                        <td>{{ vote.title }}</td>
+                                        <td>{{ vote.candidate_name }}</td>
+                                        <td>
+                                            <div><small class="text-muted">From:</small> {{ vote.start_time }}</div>
+                                            <div><small class="text-muted">To:</small> {{ vote.end_time }}</div>
+                                        </td>
+                                        <td>{{ vote.vote_time }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ vote.reference_id }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> You haven't voted in any elections yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About Your Voting History</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Reference IDs</h6>
+                        <p>Each vote is assigned a unique reference ID. This ID can be used to:</p>
+                        <ul>
+                            <li>Verify that your vote was recorded</li>
+                            <li>Provide proof of participation if needed</li>
+                            <li>Reference when contacting administrators about issues</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Privacy &amp; Security</h6>
+                        <ul>
+                            <li>Your voting history is visible only to you</li>
+                            <li>The system records who you voted for to provide this history</li>
+                            <li>This data is kept secure and confidential</li>
+                            <li>Election officials can see vote tallies but not individual votes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

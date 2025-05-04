@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Register as Candidate - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-user-plus me-2"></i>Register as Candidate</h2>
+        <p class="lead">Register your candidacy for: <strong>{{ election.title }}</strong></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Candidate Registration Form</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('candidate.register', election_id=election.id) }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="ward_number" class="form-label">Ward/Area Number</label>
+                        <input type="text" class="form-control" id="ward_number" name="ward_number" placeholder="Enter your ward or area number (if applicable)">
+                        <div class="form-text">The specific ward or area you're representing, if any.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="manifesto" class="form-label">Manifesto <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="manifesto" name="manifesto" rows="6" required></textarea>
+                        <div class="form-text">Your election promises, policy positions, and goals if elected.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="logo" class="form-label">Campaign Logo/Symbol (Optional)</label>
+                        <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                        <div class="form-text">Upload a logo or symbol for your campaign (max 2MB, JPG/PNG only).</div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Your application will require approval from an administrator before you officially become a candidate.
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirmCheck" required>
+                        <label class="form-check-label" for="confirmCheck">
+                            I confirm that all information provided is accurate and I agree to the election rules and code of conduct.
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('candidate.dashboard') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle me-1"></i> Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Election Information</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{ election.title }}</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Status
+                        <span>
+                            {% if not election.is_active %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% elif election.get_status() == 'upcoming' %}
+                                <span class="badge bg-info">Upcoming</span>
+                            {% elif election.get_status() == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                            {% elif election.get_status() == 'completed' %}
+                                <span class="badge bg-warning">Completed</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Start Time
+                        <span>{{ election.start_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        End Time
+                        <span>{{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                    </li>
+                </ul>
+                <p>{{ election.description }}</p>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Registration Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Be clear and concise in your manifesto</li>
+                    <li>Focus on specific goals and how to achieve them</li>
+                    <li>Provide contact details for voter inquiries</li>
+                    <li>Upload a clear, professional logo if possible</li>
+                    <li>Review all details before submitting</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

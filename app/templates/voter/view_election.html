@@ -1,0 +1,443 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ election.title }} - Ballot{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('voter.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('voter.elections') }}">Elections</a></li>
+                        <li class="breadcrumb-item active">{{ election.title }}</li>
+                    </ol>
+                </nav>
+                <h2 class="mb-0"><i class="fas fa-vote-yea me-2 text-primary"></i>{{ election.title }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>About this Election</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ election.description }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-primary-soft p-2 me-3">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1 small">Start Date</h6>
+                                    <div>{{ election.start_time.strftime('%d-%m-%Y %H:%M') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-primary-soft p-2 me-3">
+                                    <i class="fas fa-calendar-check text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1 small">End Date</h6>
+                                    <div>{{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Election Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if election.get_status() == 'active' %}
+                            <span class="badge bg-success rounded-pill px-3 py-2">Active</span>
+                            <span class="ms-2">This election is currently open for voting.</span>
+                        {% elif election.get_status() == 'upcoming' %}
+                            <span class="badge bg-info rounded-pill px-3 py-2">Upcoming</span>
+                            <span class="ms-2">Opens on {{ election.start_time.strftime('%d-%m-%Y') }}.</span>
+                        {% elif election.get_status() == 'completed' %}
+                            <span class="badge bg-secondary rounded-pill px-3 py-2">Completed</span>
+                            <span class="ms-2">This election has ended.</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if is_eligible %}
+                        <div class="alert alert-success border-0 mb-0">
+                            <div class="d-flex">
+                                <div class="me-2">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">You are eligible to vote in this election.</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning border-0 mb-0">
+                            <div class="d-flex">
+                                <div class="me-2">
+                                    <i class="fas fa-exclamation-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0">
+                                        {% if not is_active %}
+                                            Voting is not currently active.
+                                        {% else %}
+                                            You have already voted or are not eligible to vote in this election.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ballot Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-ballot text-primary me-2"></i>Official Ballot</h5>
+                </div>
+                <div class="card-body">
+                    {% if not is_active %}
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-info-circle me-2"></i>This election is not currently active for voting.
+                        </div>
+                    {% elif not is_eligible %}
+                        <div class="alert alert-warning border-0">
+                            <i class="fas fa-exclamation-circle me-2"></i>You have already cast your vote or are not eligible to vote in this election.
+                        </div>
+                    {% elif candidates|length == 0 %}
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-info-circle me-2"></i>There are no approved candidates for this election yet.
+                        </div>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('voter.vote', election_id=election.id) }}">
+                            <div class="alert alert-info border-0 mb-4">
+                                <div class="d-flex">
+                                    <div class="me-2">
+                                        <i class="fas fa-info-circle fa-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">Select one candidate and click "Cast My Vote" to submit your ballot.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                                {% for candidate in candidates %}
+                                    <div class="col">
+                                        <div class="card border h-100 candidate-card">
+                                            <div class="card-body">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="candidate_id" value="{{ candidate.id }}" id="candidate{{ candidate.id }}">
+                                                    <label class="form-check-label w-100" for="candidate{{ candidate.id }}">
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            {% if candidate.logo_path %}
+                                                                <img src="{{ url_for('static', filename=candidate.logo_path) }}" alt="{{ candidate.name }}" class="me-3 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="rounded-circle bg-primary-soft d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                                                    <i class="fas fa-user text-primary"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                            <div>
+                                                                <h6 class="mb-0">{{ candidate.name }}</h6>
+                                                                {% if candidate.ward_number %}
+                                                                    <small class="text-muted">Ward: {{ candidate.ward_number }}</small>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        {% if candidate.manifesto %}
+                                                            <p class="mb-0 small text-muted ps-2 border-start">{{ candidate.manifesto }}</p>
+                                                        {% endif %}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="d-grid d-md-flex justify-content-md-center">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5">
+                                    <i class="fas fa-vote-yea me-2"></i>Cast My Vote
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <small class="text-muted">By clicking "Cast My Vote", you confirm your choice. This action cannot be undone.</small>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if election.get_status() == 'completed' %}
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-bar text-primary me-2"></i>Election Results</h5>
+                        
+                        <span class="badge bg-success rounded-pill pulse-animation" id="voter-live-indicator">
+                            <i class="fas fa-circle me-1"></i> LIVE
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info border-0 mb-4">
+                            <i class="fas fa-info-circle me-2"></i>This election has ended. The official results are shown below.
+                        </div>
+                        
+                        {% if results %}
+                            <div class="mb-4">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="mb-3 text-muted">Total votes cast: <strong id="voter-total-votes">{{ results.total_votes }}</strong></h6>
+                                        
+                                        {% if results.total_votes > 0 %}
+                                            <div class="alert alert-success border-0 mb-0">
+                                                <h5 class="mb-0" id="voter-winner-info">
+                                                    <i class="fas fa-trophy me-2 text-warning"></i>
+                                                    Winner: <strong>{{ results.winner.candidate_name }}</strong> with {{ results.winner.votes }} votes ({{ results.winner.percentage }}%)
+                                                </h5>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-secondary border-0 mb-0">
+                                                <h5 class="mb-0">No votes were cast in this election.</h5>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if results.total_votes > 0 %}
+                                <h6 class="mb-3 text-muted"><i class="fas fa-chart-bar text-primary me-2"></i>Results by Candidate</h6>
+                                <div id="voter-results-container">
+                                    {% for candidate in results.candidates|sort(attribute='votes')|reverse %}
+                                        <div class="mb-3 result-item" data-candidate-id="{{ candidate.candidate_id }}">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rounded-circle bg-{{ loop.index % 5 + 1 }}-soft p-1 me-2" style="width: 30px; height: 30px; text-align: center;">
+                                                        <small>{{ loop.index }}</small>
+                                                    </div>
+                                                    <strong>{{ candidate.candidate_name }}</strong>
+                                                </div>
+                                                <span>
+                                                    <span id="voter-votes-{{ candidate.candidate_id }}">{{ candidate.votes }}</span> votes 
+                                                    (<span id="voter-percentage-{{ candidate.candidate_id }}">{{ candidate.percentage }}</span>%)
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 10px; border-radius: 5px;">
+                                                <div class="progress-bar bg-{{ loop.index % 5 + 1 }}" 
+                                                     id="voter-progress-{{ candidate.candidate_id }}"
+                                                     role="progressbar" 
+                                                     style="width: {{ candidate.percentage }}%;" 
+                                                     aria-valuenow="{{ candidate.percentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            {% if loop.first %}
+                                                <span class="badge bg-warning text-dark rounded-pill float-end mt-1 winner-badge">Winner</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <p class="lead">Results are being tallied. Please check back later.</p>
+                                <a href="{{ url_for('voter.dashboard') }}" class="btn btn-primary rounded-pill">
+                                    <i class="fas fa-arrow-left me-1"></i> Return to Dashboard
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-success-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-info-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+    
+    .bg-warning-soft {
+        background-color: rgba(var(--bs-warning-rgb), 0.15);
+    }
+    
+    .bg-danger-soft {
+        background-color: rgba(var(--bs-danger-rgb), 0.15);
+    }
+    
+    .bg-1-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-2-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-3-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+    
+    .bg-4-soft {
+        background-color: rgba(var(--bs-warning-rgb), 0.15);
+    }
+    
+    .bg-5-soft {
+        background-color: rgba(var(--bs-danger-rgb), 0.15);
+    }
+    
+    .candidate-card {
+        transition: all 0.2s ease;
+        border-color: rgba(0,0,0,0.08) !important;
+    }
+    
+    .candidate-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        border-color: var(--bs-primary) !important;
+    }
+    
+    .form-check-input:checked ~ .form-check-label .candidate-card {
+        border-color: var(--bs-primary) !important;
+    }
+    
+    /* Animation for the live badge */
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% if election.get_status() == 'completed' and results %}
+<script>
+    // Live results polling for voters
+    let voterResultsLoaded = false;
+    let voterUpdateInterval;
+    let voterPreviousVotes = {};
+    
+    function fetchVoterLiveResults() {
+        fetch("{{ url_for('voter.live_election_results', election_id=election.id) }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    return;
+                }
+                
+                if (!voterResultsLoaded) {
+                    voterResultsLoaded = true;
+                    // Initialize previous votes
+                    data.candidates.forEach(candidate => {
+                        voterPreviousVotes[candidate.candidate_id] = candidate.votes;
+                    });
+                } else {
+                    // Update counts
+                    data.candidates.forEach(candidate => {
+                        const candidateId = candidate.candidate_id;
+                        const oldCount = voterPreviousVotes[candidateId] || 0;
+                        const newCount = candidate.votes;
+                        
+                        if (newCount !== oldCount) {
+                            // Update display
+                            document.getElementById(`voter-votes-${candidateId}`).textContent = newCount;
+                            document.getElementById(`voter-percentage-${candidateId}`).textContent = candidate.percentage;
+                            document.getElementById(`voter-progress-${candidateId}`).style.width = `${candidate.percentage}%`;
+                            document.getElementById(`voter-progress-${candidateId}`).setAttribute('aria-valuenow', candidate.percentage);
+                            
+                            // Update stored count
+                            voterPreviousVotes[candidateId] = newCount;
+                        }
+                    });
+                    
+                    // Update total votes
+                    document.getElementById('voter-total-votes').textContent = data.total_votes;
+                    
+                    // Update winner info
+                    if (data.winner) {
+                        document.getElementById('voter-winner-info').innerHTML = `
+                            <i class="fas fa-trophy me-2 text-warning"></i>
+                            Winner: <strong>${data.winner.candidate_name}</strong> with ${data.winner.votes} votes (${data.winner.percentage}%)
+                        `;
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    // Initial load and set up polling
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchVoterLiveResults();
+        voterUpdateInterval = setInterval(fetchVoterLiveResults, 5000);
+    });
+    
+    // Clean up on page leave
+    window.addEventListener('beforeunload', function() {
+        clearInterval(voterUpdateInterval);
+    });
+</script>
+{% endif %}
+{% endblock %} 

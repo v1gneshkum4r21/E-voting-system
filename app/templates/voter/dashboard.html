@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}Voter Dashboard - E-Voting System{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="mb-2"><i class="fas fa-vote-yea me-2 text-primary"></i>Voter Dashboard</h2>
+                <p class="text-muted mb-0">Welcome, {{ current_user.name }}! You can view and participate in available elections below.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex">
+                    <div class="rounded-circle bg-primary-soft p-3 me-3">
+                        <i class="fas fa-vote-yea text-primary fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-normal mb-1">Active Elections</h6>
+                        <h3 class="mb-0">{{ active_elections|length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex">
+                    <div class="rounded-circle bg-success-soft p-3 me-3">
+                        <i class="fas fa-check-circle text-success fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-normal mb-1">Votes Cast</h6>
+                        <h3 class="mb-0">{{ voting_history|length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex">
+                    <div class="rounded-circle bg-info-soft p-3 me-3">
+                        <i class="fas fa-calendar-alt text-info fa-2x"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-normal mb-1">Upcoming Elections</h6>
+                        <h3 class="mb-0">{{ upcoming_elections|length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Active Elections Card -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-vote-yea text-primary me-2"></i>Active Elections You Can Vote In</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_elections %}
+                        <div class="list-group">
+                            {% for election in active_elections %}
+                                <a href="{{ url_for('voter.view_election', election_id=election.id) }}" class="list-group-item list-group-item-action border-0 mb-2 rounded shadow-sm">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h5 class="mb-1">{{ election.title }}</h5>
+                                        <span class="badge bg-success rounded-pill">Active</span>
+                                    </div>
+                                    <p class="mb-1 text-muted">{{ election.description }}</p>
+                                    <div class="d-flex align-items-center mt-2 small">
+                                        <i class="far fa-clock text-muted me-1"></i>
+                                        <span>Ends on: {{ election.end_time.strftime('%d-%m-%Y %H:%M') }}</span>
+                                        
+                                        <button class="btn btn-primary rounded-pill btn-sm ms-auto">
+                                            <i class="fas fa-check-circle me-1"></i> Vote Now
+                                        </button>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> There are no active elections you're eligible to vote in at this time.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <a href="{{ url_for('voter.elections') }}" class="btn btn-outline-primary rounded-pill">
+                        <i class="fas fa-list me-1"></i> View All Elections
+                    </a>
+                </div>
+            </div>
+
+            <!-- Popular Candidates and Party Distribution -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-bar text-primary me-2"></i>Election Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3 text-muted"><i class="fas fa-chart-pie text-primary me-2"></i>Party Distribution</h6>
+                            {% if party_data %}
+                                <div class="list-group">
+                                    {% for party in party_data %}
+                                        <div class="list-group-item border-0 px-0">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span>{{ party.name }}</span>
+                                                <span class="badge bg-primary rounded-pill">{{ party.votes }} votes</span>
+                                            </div>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar" role="progressbar" style="width: {{ party.percentage }}%;" 
+                                                     aria-valuenow="{{ party.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="small text-end mt-1">{{ party.percentage }}%</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-light border">
+                                    <i class="fas fa-info-circle me-2"></i> No party data available for current elections.
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3 text-muted"><i class="fas fa-user-check text-success me-2"></i>Popular Candidates</h6>
+                            {% if popular_candidates %}
+                                <div class="list-group">
+                                    {% for candidate in popular_candidates %}
+                                        <div class="list-group-item border-0 d-flex justify-content-between align-items-center px-0">
+                                            <div>
+                                                <div class="fw-medium">{{ candidate.candidate_name }}</div> 
+                                                <small class="text-muted">
+                                                    {% if candidate.party %}
+                                                        {{ candidate.party }}
+                                                    {% else %}
+                                                        Independent
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-success rounded-pill">{{ candidate.vote_count }} votes</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-light border">
+                                    <i class="fas fa-info-circle me-2"></i> No popular candidates data available.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar Cards -->
+        <div class="col-md-4">
+            <!-- Voting History Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-history text-success me-2"></i>Your Voting History</h5>
+                </div>
+                <div class="card-body">
+                    {% if voting_history %}
+                        <div class="list-group">
+                            {% for vote in voting_history %}
+                                <div class="list-group-item border-0 mb-2 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ vote['title'] }}</h6>
+                                        <small class="text-muted">{{ vote['vote_time'].split(' ')[0] }}</small>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-user-check me-1"></i> Voted for: {{ vote['candidate_name'] }}
+                                    </div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-fingerprint me-1"></i> Ref: {{ vote['reference_id'][:8] }}...
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-light border">
+                            <i class="fas fa-info-circle me-2"></i> You haven't voted in any elections yet.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <a href="{{ url_for('voter.voting_history') }}" class="btn btn-outline-success rounded-pill btn-sm">
+                        <i class="fas fa-history me-1"></i> View Complete History
+                    </a>
+                </div>
+            </div>
+
+            <!-- Voting Information Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle text-primary me-2"></i>Voting Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rounded-circle bg-success-soft p-2 me-2">
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                            <h6 class="mb-0">How to Vote</h6>
+                        </div>
+                        <p class="small text-muted ms-4 ps-2">Click on an active election to view the ballot and cast your vote. Each election allows only one vote per voter.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rounded-circle bg-primary-soft p-2 me-2">
+                                <i class="fas fa-shield-alt text-primary"></i>
+                            </div>
+                            <h6 class="mb-0">Voting Security</h6>
+                        </div>
+                        <p class="small text-muted ms-4 ps-2">Your vote is confidential and secure. After voting, you'll receive a unique reference ID for verification.</p>
+                    </div>
+                    
+                    <div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rounded-circle bg-info-soft p-2 me-2">
+                                <i class="fas fa-question-circle text-info"></i>
+                            </div>
+                            <h6 class="mb-0">Need Help?</h6>
+                        </div>
+                        <p class="small text-muted ms-4 ps-2">If you encounter any issues or have questions about the voting process, please contact the election administrator.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-container {
+        padding: 1.5rem 0;
+    }
+    
+    .admin-header {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding-bottom: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .list-group-item.list-group-item-action {
+        transition: all 0.2s ease;
+    }
+    
+    .list-group-item.list-group-item-action:hover {
+        transform: translateY(-2px);
+    }
+    
+    .bg-primary-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    
+    .bg-success-soft {
+        background-color: rgba(var(--bs-success-rgb), 0.15);
+    }
+    
+    .bg-info-soft {
+        background-color: rgba(var(--bs-info-rgb), 0.15);
+    }
+    
+    .progress {
+        border-radius: 1rem;
+        background-color: rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %} 
